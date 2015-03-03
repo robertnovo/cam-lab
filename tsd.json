@@ -1,0 +1,18 @@
+{
+  "version": "v4",
+  "repo": "borisyankov/DefinitelyTyped",
+  "ref": "master",
+  "path": "typings",
+  "bundle": "typings/tsd.d.ts",
+  "installed": {
+    "threejs/three.d.ts": {
+      "commit": "bb465f2cc799a41a7ccb688c6d1a8f5583dda12d"
+    },
+    "webrtc/MediaStream.d.ts": {
+      "commit": "bb465f2cc799a41a7ccb688c6d1a8f5583dda12d"
+    },
+    "webaudioapi/waa.d.ts": {
+      "commit": "bb465f2cc799a41a7ccb688c6d1a8f5583dda12d"
+    }
+  }
+}
