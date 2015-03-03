@@ -2,18 +2,20 @@
  * Created by novo on 03/03/15.
  */
 /// <reference path="iboid.ts"/>
-module Boid {
-    class Boid implements IBoid {
+/// <reference path="steeringmanager.ts"/>
+module Core {
+    export class Boid implements IBoid {
 
         // public members
         position:THREE.Vector3;
+        steering: SteeringManager;
 
         // private members
         private maxVelocity:number;
 
         constructor(posX:number, posY:number, posZ:number, totalMass:number) {
             console.info("boid init");
-            this.position.set(posX, posY, posZ);
+            this.position = new THREE.Vector3(posX, posY, posZ);
         }
 
         getVelocity():THREE.Vector3 {

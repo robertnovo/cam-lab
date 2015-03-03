@@ -2,7 +2,7 @@
  * Created by novo on 03/03/15.
  */
 /// <reference path="../../typings/threejs/three.d.ts"/>
-module Boid {
+module Core {
     export interface IBoid {
         getVelocity(): THREE.Vector3;
         getMaxVelocity(): number;
