@@ -6,15 +6,25 @@
 module Core {
     export class SteeringManager {
         // seek / flee
-        desired: THREE.Vector3;
+        desired:THREE.Vector3;
 
         // private members
-        private steering: THREE.Vector3;
-        private host: IBoid;
+        private steering:THREE.Vector3;
+        private host:IBoid;
 
-        constructor(host: IBoid) {
+        constructor(host:IBoid) {
             console.log("steering manager init");
             this.host = host;
+        }
+
+        update():void {
+        }
+
+        truncate(vector:THREE.Vector3, max:number):void {
+            var i:number;
+            i = max / vector.length();
+            i = i < 1.0 ? i : 1.0;
+            vector.multiplyScalar(i);
         }
     }
 }

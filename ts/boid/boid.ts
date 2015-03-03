@@ -8,14 +8,18 @@ module Core {
 
         // public members
         position:THREE.Vector3;
-        steering: SteeringManager;
+        steering:SteeringManager;
 
         // private members
-        private maxVelocity:number;
+        maxVelocity:number;
 
         constructor(posX:number, posY:number, posZ:number, totalMass:number) {
-            console.info("boid init");
+            console.info('boid init', this);
             this.position = new THREE.Vector3(posX, posY, posZ);
+            this.steering = new SteeringManager(this);
+        }
+
+        update():void {
         }
 
         getVelocity():THREE.Vector3 {

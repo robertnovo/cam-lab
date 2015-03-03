@@ -15,7 +15,7 @@ module Core {
             console.log("app init");
             this.overviewCamera = Environment.overViewCamera;
             Environment.scene.add(new THREE.AxisHelper(15));
-            this.followCamera = new CameraBoid(100,20,100,10);
+            this.followCamera = new CameraBoid(0,20,0,10);
             this.controls = new THREE.OrbitControls(this.overviewCamera);
             this.animate();
         }
@@ -27,6 +27,7 @@ module Core {
 
         update():void {
             this.controls.update();
+            TWEEN.update();
         }
 
         animate():void {
