@@ -2,13 +2,14 @@
  * Created by novo on 04/03/15.
  */
 /// <reference path="../typings/lodash/lodash.d.ts"/>
-var Core;
-(function (Core) {
-    var Mediator = (function () {
-        function Mediator() {
+module Core {
+    class Mediator {
+        private channels: Array<any>;
+        constructor() {
             this.channels = [];
         }
-        Mediator.prototype.subscribe = function (channel, fn, inFile) {
+
+        subscribe(channel, fn, inFile) {
             if (!this.channels[channel]) {
                 this.channels[channel] = [];
             }
@@ -19,8 +20,9 @@ var Core;
             if (inFile) {
                 console.info(channel + " subscription in " + inFile);
             }
-        };
-        Mediator.prototype.publish = function (channel, args, inFile) {
+        }
+
+        publish(channel, args, inFile) {
             if (!this.channels[channel]) {
                 console.warn("Mediator warning! Channel has no subscribers: ", "'" + channel + "'", "in file: ", inFile);
                 return false;
@@ -30,11 +32,10 @@ var Core;
                 var subscription = this.channels[channel][key];
                 subscription.callback.apply(subscription.context, args);
             }, this);
+
             if (inFile) {
                 console.info(channel + " publish in " + inFile);
             }
-        };
-        return Mediator;
-    })();
-})(Core || (Core = {}));
-//# sourceMappingURL=bundle.js.map
+        }
+    }
+}

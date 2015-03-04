@@ -75,20 +75,24 @@ module Core {
             return new THREE.Vector3();
         }
 
-        //getRootForce(root:RootObject, avoidForce:number, behindDistance:number):THREE.Vector3 {
-        //    var _avoidForce = avoidForce;
-        //    var _behindDistance = behindDistance;
-        //    var tv = root.velocity.clone();
-        //    var force = new THREE.Vector3(0, 0, 0);
-        //    tv.normalize();
-        //    tv.multiplyScalar(_behindDistance);
-        //    this.ahead = root.position.clone().add(tv);
-        //    tv.multiplyScalar(-1);
-        //    this.behind = root.position.clone().add(tv);
-        //    force.add(this.doSeek(this.behind, _avoidForce));
-        //    console.log(force);
-        //    return force;
-        //}
+        applyRootForce(root:RootObject, avoidForce:number, behindDistance:number):void {
+            this.steering.add(this.doApplyRootForce(root, avoidForce, behindDistance));
+            this.steering.add(new THREE.Vector3(-1,0,-2));
+        }
+
+        private doApplyRootForce(root:RootObject, avoidForce:number, behindDistance:number):THREE.Vector3 {
+            var _avoidForce = avoidForce;
+            var _behindDistance = behindDistance;
+            var tv = root.velocity.clone();
+            var force = new THREE.Vector3(0, 0, 0);
+            tv.normalize();
+            tv.multiplyScalar(_behindDistance);
+            this.ahead = root.position.clone().add(tv);
+            tv.multiplyScalar(-1);
+            this.behind = root.position.clone().add(tv);
+            force.add(this.doSeek(this.behind, _avoidForce));
+            return force;
+        }
 
         reset():void {
             this.steering.x = this.steering.y = this.steering.z = 0;

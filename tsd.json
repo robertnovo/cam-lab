@@ -13,6 +13,9 @@
     },
     "webaudioapi/waa.d.ts": {
       "commit": "bb465f2cc799a41a7ccb688c6d1a8f5583dda12d"
+    },
+    "lodash/lodash.d.ts": {
+      "commit": "bb465f2cc799a41a7ccb688c6d1a8f5583dda12d"
     }
   }
 }

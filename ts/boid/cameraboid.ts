@@ -15,8 +15,10 @@ module Core {
         // private camera properties
         private camera:THREE.PerspectiveCamera;
         private cameraHelper:THREE.CameraHelper;
+        private static mass: number = 10;
+        private static maxVelocity: number = 1;
 
-        constructor(posX:number, posY:number, posZ:number, totalMass:number) {
+        constructor(posX:number, posY:number, posZ:number, totalMass:number = 10) {
             super(posX, posY, posZ, totalMass);
             this.camera = new THREE.PerspectiveCamera(45, 1, 20, 1000);
             this.camera.position.x = this.x;
@@ -26,9 +28,9 @@ module Core {
             Environment.scene.add(this.camera);
             Environment.scene.add(this.cameraHelper);
 
-            this.root = new RootObject(0, 0, 0);
+            this.root = new RootObject(30, 0, 10);
             this.resting = false;
-            this.maxVelocity = 5;
+
 
             // tweening
             this.root.moveTo(new THREE.Vector3(250, 0, 0), 2);
@@ -45,24 +47,15 @@ module Core {
                 //this.steering.wander();
             } else {
                 //console.log(this.root.position);
-                this.steering.seek(this.root.getPosition().clone(), 50);
+                this.steering.applyRootForce(this.root, 100, 200);
+                //this.steering.seek(this.root.getPosition().clone(), 50);
             }
         }
 
-        private getCameraToRootVector(cameraPos, rootPos):THREE.Vector3 {
-            var vec = new THREE.Vector3();
-            vec.subVectors(cameraPos, rootPos);
-            return vec;
-        }
-
         update():void {
-            //console.log(this.position);
             super.update();
             this.camera.position.x = this.x;
             this.camera.position.z = this.z;
-            //console.log(this.x, this.y, this.z);
-            //var distanceVec = this.getCameraToRootVector(this.camera.position, this.root.getPosition().clone());
-            //distanceVec.normalize();
             this.camera.lookAt(this.root.getPosition().clone());
             this.root.updateMatrixWorld(true);
         }

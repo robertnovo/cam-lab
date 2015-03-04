@@ -32,6 +32,7 @@ module Core {
             this.ahead = new THREE.Vector3(0, 0, 0);
             this.avoidance = new THREE.Vector3(0, 0, 0);
 
+            this.mesh.position.set(this.position.x, this.position.y, this.position.z);
             this.children.push(this.mesh);
             Environment.scene.add(this);
         }
@@ -43,9 +44,9 @@ module Core {
                     y: target.y,
                     z: target.z
                 }, seconds * 1000)
-                .repeat(Infinity)
+                //.repeat(Infinity)
                 .delay(1000)
-                .yoyo(true)
+                //.yoyo(true)
                 .easing(TWEEN.Easing.Exponential.InOut)
                 .onUpdate((interpolation) => {
                     // move mesh
