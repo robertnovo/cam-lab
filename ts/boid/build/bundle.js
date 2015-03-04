@@ -75,6 +75,6 @@ var Core;
         }
         return CameraRoot;
     })(Core.Boid);
-    Core.CameraRoot = CameraRoot;
+    Core.RootObject = CameraRoot;
 })(Core || (Core = {}));
 //# sourceMappingURL=bundle.js.map

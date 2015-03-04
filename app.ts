@@ -28,6 +28,9 @@ module Core {
         update():void {
             this.controls.update();
             TWEEN.update();
+
+            // update boid camera.
+            this.followCamera.update();
         }
 
         animate():void {
