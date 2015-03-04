@@ -5,17 +5,20 @@
 /// <reference path="ts/boid/cameraboid.ts"/>
 /// <reference path="typings/threejs/three.d.ts"/>
 /// <reference path="typings/OrbitControls.d.ts"/>
+/// <reference path="ts/steering-old/cameramodel.ts"/>
 module Core {
     export class App {
         overviewCamera;
         controls;
         followCamera:CameraBoid;
+        camera: CameraModel;
 
         constructor() {
             console.log("app init");
             this.overviewCamera = Environment.overViewCamera;
             Environment.scene.add(new THREE.AxisHelper(15));
-            this.followCamera = new CameraBoid(0,20,0,10);
+            //this.camera = new CameraModel();
+            this.followCamera = new CameraBoid(40,40,0,100);
             this.controls = new THREE.OrbitControls(this.overviewCamera);
             this.animate();
         }
@@ -23,6 +26,7 @@ module Core {
 
         render():void {
             Environment.renderer.render(Environment.scene, this.overviewCamera);
+            //Environment.renderer.render(Environment.scene, this.followCamera.getCamera());
         }
 
         update():void {

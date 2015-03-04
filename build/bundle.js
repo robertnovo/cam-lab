@@ -105,7 +105,7 @@ var Core;
             var velocity = this.host.getVelocity();
             var position = this.host.getPosition();
             /* TODO: Lägg in vettig MAX_FORCE, inte 5.4 */
-            this.truncate(this.steering, 5.4);
+            this.truncate(this.steering, 10);
             this.steering.multiplyScalar(1 / this.host.getMass());
             velocity.add(this.steering);
             this.truncate(velocity, this.host.getMaxVelocity());
@@ -124,6 +124,10 @@ var Core;
             this.desired.normalize();
             if (distance <= slowingRadius) {
                 this.desired.multiplyScalar(this.host.getMaxVelocity() * distance / slowingRadius);
+                if (distance < 3) {
+                    //this.desired.multiplyScalar(0);
+                    this.reset();
+                }
             }
             else {
                 this.desired.multiplyScalar(this.host.getMaxVelocity());
@@ -139,21 +143,23 @@ var Core;
             /*TODO: Implement wander logic. For now it returns (0,0,0) */
             return new THREE.Vector3();
         };
-        SteeringManager.prototype.getRootForce = function (root, avoidForce, behindDistance) {
-            var _avoidForce = avoidForce;
-            var _behindDistance = behindDistance;
-            var tv = root.velocity.clone();
-            var force = new THREE.Vector3(0, 0, 0);
-            tv.normalize();
-            tv.multiplyScalar(_behindDistance);
-            this.ahead = root.position.clone().add(tv);
-            tv.multiplyScalar(-1);
-            this.behind = root.position.clone().add(tv);
-            force.add(this.doSeek(this.behind, _avoidForce));
-            return force;
-        };
+        //getRootForce(root:RootObject, avoidForce:number, behindDistance:number):THREE.Vector3 {
+        //    var _avoidForce = avoidForce;
+        //    var _behindDistance = behindDistance;
+        //    var tv = root.velocity.clone();
+        //    var force = new THREE.Vector3(0, 0, 0);
+        //    tv.normalize();
+        //    tv.multiplyScalar(_behindDistance);
+        //    this.ahead = root.position.clone().add(tv);
+        //    tv.multiplyScalar(-1);
+        //    this.behind = root.position.clone().add(tv);
+        //    force.add(this.doSeek(this.behind, _avoidForce));
+        //    console.log(force);
+        //    return force;
+        //}
         SteeringManager.prototype.reset = function () {
             this.steering.x = this.steering.y = this.steering.z = 0;
+            this.desired.x = this.desired.y = this.desired.z = 0;
         };
         SteeringManager.prototype.truncate = function (vector, max) {
             var i;
@@ -215,15 +221,18 @@ var Core;
             this.y = this.position.y;
             this.z = this.position.z;
         }
+        Boid.prototype.think = function () {
+            this.steering.wander();
+        };
+        Boid.prototype.getAngle = function (vector) {
+            return Math.atan2(vector.z, vector.x);
+        };
         Boid.prototype.update = function () {
-            this.steering.update();
             this.think();
+            this.steering.update();
             this.x = this.position.x;
             this.y = this.position.y;
             this.z = this.position.z;
-        };
-        Boid.prototype.think = function () {
-            this.steering.wander();
         };
         Boid.prototype.getVelocity = function () {
             return this.velocity;
@@ -264,6 +273,11 @@ var Core;
             var material = new THREE.MeshBasicMaterial({ color: 0x000000 });
             this.mesh = new THREE.Mesh(geometry, material);
             this.velocity = new THREE.Vector3();
+            this.desired = new THREE.Vector3(0, 0, 0);
+            this.steering = new THREE.Vector3(0, 0, 0);
+            this.behind = new THREE.Vector3(0, 0, 0);
+            this.ahead = new THREE.Vector3(0, 0, 0);
+            this.avoidance = new THREE.Vector3(0, 0, 0);
             this.children.push(this.mesh);
             Environment.scene.add(this);
         }
@@ -277,6 +291,9 @@ var Core;
                 // move mesh
                 _this.mesh.position.lerp(_this.position, interpolation);
             }).start();
+        };
+        RootObject.prototype.getPosition = function () {
+            return this.position;
         };
         return RootObject;
     })(THREE.Object3D);
@@ -293,10 +310,10 @@ var Core;
         __extends(CameraBoid, _super);
         function CameraBoid(posX, posY, posZ, totalMass) {
             _super.call(this, posX, posY, posZ, totalMass);
-            this.camera = new THREE.PerspectiveCamera(45, 1, 1, 200);
-            this.camera.position.x = this.position.x;
-            this.camera.position.y = this.position.y;
-            this.camera.position.z = this.position.z;
+            this.camera = new THREE.PerspectiveCamera(45, 1, 20, 1000);
+            this.camera.position.x = this.x;
+            this.camera.position.y = this.y;
+            this.camera.position.z = this.z;
             this.cameraHelper = new THREE.CameraHelper(this.camera);
             Environment.scene.add(this.camera);
             Environment.scene.add(this.cameraHelper);
@@ -306,31 +323,33 @@ var Core;
             // tweening
             this.root.moveTo(new THREE.Vector3(250, 0, 0), 2);
         }
+        CameraBoid.prototype.getCamera = function () {
+            return this.camera;
+        };
         // override
         CameraBoid.prototype.think = function () {
             if (this.resting) {
-                this.steering.wander();
+                console.log("resting");
             }
             else {
-                this.steering.seek(this.steering.getRootForce(this.root, 300, 50), 20);
+                //console.log(this.root.position);
+                this.steering.seek(this.root.getPosition().clone(), 50);
             }
         };
         CameraBoid.prototype.getCameraToRootVector = function (cameraPos, rootPos) {
             var vec = new THREE.Vector3();
-            vec.subVectors(rootPos, cameraPos);
+            vec.subVectors(cameraPos, rootPos);
             return vec;
         };
         CameraBoid.prototype.update = function () {
             //console.log(this.position);
             _super.prototype.update.call(this);
-            //this.steering.seek(this.steering.getRootForce(this.root, 1, 50), 20);
-            //this.camera.position.x = this.root.position.x;
-            //this.camera.position.x = this.x;
-            //this.camera.position.z = this.y;
-            console.log(this.camera.position);
-            var distanceVec = this.getCameraToRootVector(this.camera.position, this.root.position);
-            distanceVec.normalize();
-            this.camera.lookAt(distanceVec);
+            this.camera.position.x = this.x;
+            this.camera.position.z = this.z;
+            //console.log(this.x, this.y, this.z);
+            //var distanceVec = this.getCameraToRootVector(this.camera.position, this.root.getPosition().clone());
+            //distanceVec.normalize();
+            this.camera.lookAt(this.root.getPosition().clone());
             this.root.updateMatrixWorld(true);
         };
         // override super getMaxVelocity
@@ -342,12 +361,40 @@ var Core;
     Core.CameraBoid = CameraBoid;
 })(Core || (Core = {}));
 /**
+ * Created by novo on 04/03/15.
+ */
+/// <reference path="../../typings/threejs/three.d.ts"/>
+/// <reference path="../environment.ts"/>
+var Core;
+(function (Core) {
+    var CameraModel = (function () {
+        function CameraModel() {
+            var geometry = new THREE.BoxGeometry(10, 10, 10);
+            var material = new THREE.MeshBasicMaterial({
+                color: 0x00ff00
+            });
+            this.mesh = new THREE.Mesh(geometry, material);
+            Environment.scene.add(this.mesh);
+            // camera
+            this.camera = new THREE.PerspectiveCamera(60, 1, 12, 200);
+            this.camera.matrixWorldNeedsUpdate = true;
+            var cameraHelper = new THREE.CameraHelper(this.camera);
+            Environment.scene.add(cameraHelper);
+            Environment.scene.add(this.camera);
+            this.root = new Core.RootObject(0, 0, 0);
+        }
+        return CameraModel;
+    })();
+    Core.CameraModel = CameraModel;
+})(Core || (Core = {}));
+/**
  * Created by novo on 03/03/15.
  */
 /// <reference path="ts/environment.ts"/>
 /// <reference path="ts/boid/cameraboid.ts"/>
 /// <reference path="typings/threejs/three.d.ts"/>
 /// <reference path="typings/OrbitControls.d.ts"/>
+/// <reference path="ts/steering-old/cameramodel.ts"/>
 var Core;
 (function (Core) {
     var App = (function () {
@@ -355,12 +402,14 @@ var Core;
             console.log("app init");
             this.overviewCamera = Environment.overViewCamera;
             Environment.scene.add(new THREE.AxisHelper(15));
-            this.followCamera = new Core.CameraBoid(0, 20, 0, 10);
+            //this.camera = new CameraModel();
+            this.followCamera = new Core.CameraBoid(40, 40, 0, 100);
             this.controls = new THREE.OrbitControls(this.overviewCamera);
             this.animate();
         }
         App.prototype.render = function () {
             Environment.renderer.render(Environment.scene, this.overviewCamera);
+            //Environment.renderer.render(Environment.scene, this.followCamera.getCamera());
         };
         App.prototype.update = function () {
             this.controls.update();

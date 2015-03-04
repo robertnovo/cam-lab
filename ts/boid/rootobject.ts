@@ -10,6 +10,11 @@ module Core {
         private mesh:THREE.Mesh;
 
         velocity: THREE.Vector3;
+        desired: THREE.Vector3;
+        steering: THREE.Vector3;
+        behind: THREE.Vector3;
+        ahead: THREE.Vector3;
+        avoidance: THREE.Vector3;
 
         constructor(posX:number, posY:number, posZ:number) {
             super();
@@ -20,6 +25,12 @@ module Core {
             var material = new THREE.MeshBasicMaterial({color: 0x000000});
             this.mesh = new THREE.Mesh(geometry, material);
             this.velocity = new THREE.Vector3();
+
+            this.desired = new THREE.Vector3(0, 0, 0);
+            this.steering = new THREE.Vector3(0, 0, 0);
+            this.behind = new THREE.Vector3(0, 0, 0);
+            this.ahead = new THREE.Vector3(0, 0, 0);
+            this.avoidance = new THREE.Vector3(0, 0, 0);
 
             this.children.push(this.mesh);
             Environment.scene.add(this);
@@ -43,5 +54,8 @@ module Core {
                 .start();
         }
 
+        getPosition() {
+            return this.position;
+        }
     }
 }

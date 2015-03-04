@@ -18,10 +18,10 @@ module Core {
 
         constructor(posX:number, posY:number, posZ:number, totalMass:number) {
             super(posX, posY, posZ, totalMass);
-            this.camera = new THREE.PerspectiveCamera(45, 1, 1, 200);
-            this.camera.position.x = this.position.x;
-            this.camera.position.y = this.position.y;
-            this.camera.position.z = this.position.z;
+            this.camera = new THREE.PerspectiveCamera(45, 1, 20, 1000);
+            this.camera.position.x = this.x;
+            this.camera.position.y = this.y;
+            this.camera.position.z = this.z;
             this.cameraHelper = new THREE.CameraHelper(this.camera);
             Environment.scene.add(this.camera);
             Environment.scene.add(this.cameraHelper);
@@ -34,34 +34,36 @@ module Core {
             this.root.moveTo(new THREE.Vector3(250, 0, 0), 2);
         }
 
+        getCamera():THREE.PerspectiveCamera {
+            return this.camera;
+        }
+
         // override
         think():void {
             if (this.resting) {
-                this.steering.wander();
+                console.log("resting");
+                //this.steering.wander();
             } else {
-                this.steering.seek(this.steering.getRootForce(this.root, 300, 50), 20);
-                //this.steering.seek(this.root.position, 20);
+                //console.log(this.root.position);
+                this.steering.seek(this.root.getPosition().clone(), 50);
             }
         }
 
         private getCameraToRootVector(cameraPos, rootPos):THREE.Vector3 {
             var vec = new THREE.Vector3();
-            vec.subVectors(rootPos, cameraPos);
+            vec.subVectors(cameraPos, rootPos);
             return vec;
         }
 
         update():void {
             //console.log(this.position);
             super.update();
-            //this.steering.seek(this.steering.getRootForce(this.root, 1, 50), 20);
-            //this.camera.position.x = this.root.position.x;
-            //this.camera.position.x = this.x;
-            //this.camera.position.z = this.y;
-            console.log(this.camera.position);
-            var distanceVec = this.getCameraToRootVector(this.camera.position, this.root.position);
-            distanceVec.normalize();
-            this.camera.lookAt(distanceVec);
-
+            this.camera.position.x = this.x;
+            this.camera.position.z = this.z;
+            //console.log(this.x, this.y, this.z);
+            //var distanceVec = this.getCameraToRootVector(this.camera.position, this.root.getPosition().clone());
+            //distanceVec.normalize();
+            this.camera.lookAt(this.root.getPosition().clone());
             this.root.updateMatrixWorld(true);
         }
 

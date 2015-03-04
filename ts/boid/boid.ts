@@ -15,6 +15,7 @@ module Core {
         mass:number;
 
         maxVelocity:number = 3;
+
         x:number;
         y:number;
         z:number;
@@ -31,18 +32,21 @@ module Core {
             this.z = this.position.z;
         }
 
+        think():void {
+            this.steering.wander();
+        }
+
+        getAngle(vector:THREE.Vector3):number {
+            return Math.atan2(vector.z, vector.x);
+        }
+
         update():void {
-            this.steering.update();
             this.think();
+            this.steering.update();
             this.x = this.position.x;
             this.y = this.position.y;
             this.z = this.position.z;
         }
-
-        think() :void {
-            this.steering.wander();
-        }
-
 
         getVelocity():THREE.Vector3 {
             return this.velocity;
