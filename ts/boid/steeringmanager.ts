@@ -77,7 +77,7 @@ module Core {
 
         applyRootForce(root:RootObject, avoidForce:number, behindDistance:number):void {
             this.steering.add(this.doApplyRootForce(root, avoidForce, behindDistance));
-            this.steering.add(new THREE.Vector3(-1,0,-2));
+            this.steering.add(new THREE.Vector3(-1,0,-1));
         }
 
         private doApplyRootForce(root:RootObject, avoidForce:number, behindDistance:number):THREE.Vector3 {
