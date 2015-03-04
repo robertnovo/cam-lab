@@ -57,6 +57,10 @@ module Core {
             this.camera.position.x = this.x;
             this.camera.position.z = this.z;
             this.camera.lookAt(this.root.getPosition().clone());
+
+            // recording section
+            /* TODO: Implement recording */
+
             this.root.updateMatrixWorld(true);
         }
 

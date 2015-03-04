@@ -4,18 +4,17 @@
 /// <reference path="../typings/threejs/three.d.ts"/>
 var Core;
 (function (Core) {
-    // singleton
     var RecordData = (function () {
-        function RecordData() {
-            this._directionArray = new Array();
-            this._timeArray = new Array();
-            this._positionArray = new Array();
+        function RecordData(directionArray, positionArray, timeArray) {
             this._isActive = false;
+            this._directionArray = directionArray;
+            this._positionArray = positionArray;
+            this._timeArray = timeArray;
         }
         RecordData.prototype.addRecordSample = function (direction, position) {
             this._directionArray.push(direction);
             this._positionArray.push(position);
-            this._timeArray.push(this._clock.elapsedTime);
+            this._timeArray.push(this._clock.getElapsedTime);
         };
         RecordData.prototype.startRecordData = function (direction, position) {
             this._isActive = true;
@@ -57,14 +56,13 @@ var Core;
         });
         return RecordData;
     })();
-    Core.RecordData = RecordData;
     // singleton
     var FrameRecorder = (function () {
         function FrameRecorder() {
             this._activeRecords = new Array();
         }
         FrameRecorder.prototype.startRecord = function (position, direction) {
-            var recordData = new RecordData();
+            var recordData = this.createEmtpyRecord();
             recordData.startRecordData(position, direction);
             this._activeRecords.push(recordData);
             return this._activeRecords.length;
@@ -75,17 +73,31 @@ var Core;
         FrameRecorder.prototype.recordSample = function (arrayIndex, direction, position) {
             this._activeRecords[arrayIndex].addRecordSample(direction, position);
         };
+        FrameRecorder.prototype.exportAndRemoveRecord = function (arrayIndex) {
+            this.validateRecord(this._activeRecords[arrayIndex]);
+            // all good.
+            var record = this.copyRecordData(this._activeRecords[arrayIndex]);
+            this._activeRecords[arrayIndex] = null;
+            return record;
+        };
         FrameRecorder.prototype.exportRecord = function (arrayIndex) {
-            // export och sätta till index i activeRecords till null
-            if (this._activeRecords[arrayIndex].getIsActive) {
-                var _timeArray = this._activeRecords[arrayIndex].getTimeArray;
-                var _positionArray = this._activeRecords[arrayIndex].getPositionArray;
-                var _directionArray = this._activeRecords[arrayIndex].getDirectionArray;
-                this._activeRecords[arrayIndex] = null;
-            }
-            else {
+            this.validateRecord(this._activeRecords[arrayIndex]);
+            return this.copyRecordData(this._activeRecords[arrayIndex]);
+        };
+        FrameRecorder.prototype.removeRecord = function (arrayIndex) {
+            this.validateRecord(this._activeRecords[arrayIndex]);
+            this._activeRecords[arrayIndex] = null;
+        };
+        FrameRecorder.prototype.validateRecord = function (record) {
+            if (record.getIsActive) {
                 throw new Error("current record is active");
             }
+        };
+        FrameRecorder.prototype.createEmtpyRecord = function () {
+            return new RecordData(new Array(), new Array(), new Array());
+        };
+        FrameRecorder.prototype.copyRecordData = function (data) {
+            return new RecordData(data.getDirectionArray, data.getPositionArray, data.getTimeArray);
         };
         return FrameRecorder;
     })();
@@ -98,13 +110,13 @@ var Core;
  var startIndex = FrameRecorder.startRecord(startPos, lookAt-direction); // returnerar array index (aI)
 
  // each frame
- FrameRecorder.recordSample(startIndex, currentPos, currentLookat);
+ FrameRecorder.updateRecord(startIndex, currentPos, currentLookat);
 
  // stop
  FrameRecorder.stopRecord(startIndex, currentPOs, currentLookat);
 
 
- FrameRecord.export(startIndex);
- =>
+ var record = FrameRecord.exportAndRemoveRecord(startIndex);
+    =>  Recordata
  */
 //# sourceMappingURL=bundle.js.map

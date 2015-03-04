@@ -2,7 +2,7 @@
  * Created by novo on 03/03/15.
  */
 /// <reference path="boid.ts"/>
-
+/// <reference path="../framerecorder.ts"/>
 /// <reference path="../../typings/tween.d.ts"/>
 module Core {
     export class RootObject extends THREE.Object3D {
@@ -38,6 +38,7 @@ module Core {
         }
 
         moveTo(target:THREE.Vector3, seconds:number):void {
+            var recordIndex;
             var Tween = new TWEEN.Tween(this.position)
                 .to({
                     x: target.x,
@@ -45,12 +46,26 @@ module Core {
                     z: target.z
                 }, seconds * 1000)
                 //.repeat(Infinity)
-                .delay(1000)
+                //.delay(1000)
                 //.yoyo(true)
                 .easing(TWEEN.Easing.Exponential.InOut)
                 .onUpdate((interpolation) => {
                     // move mesh
+                    var vec = this.position.clone();
+                    vec = vec.lerp(vec, interpolation);
                     this.mesh.position.lerp(this.position, interpolation);
+                    _FrameRecorder.updateRecord(recordIndex, vec, vec);
+                })
+                .onStart(() => {
+                  console.log("initialize cam record");
+                  /* TODO: Init cam recorder */
+                    console.log(this.position);
+                    recordIndex = _FrameRecorder.startRecord(this.position.clone(), this.position.clone());
+                })
+                .onComplete(() => {
+                    _FrameRecorder.stopRecord(recordIndex, this.mesh.position, this.mesh.position);
+                    console.log(_FrameRecorder.exportAndRemoveRecord(recordIndex));
+                    //_FrameRecorder.exportRecord(recordIndex);
                 })
                 .start();
         }
