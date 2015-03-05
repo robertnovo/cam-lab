@@ -7,7 +7,7 @@ module Core {
     export class SteeringManager {
 
         // seek / flee
-        desired:THREE.Vector3;
+        path:THREE.Vector3;
 
         steering:THREE.Vector3;
 
@@ -16,15 +16,18 @@ module Core {
 
         // private members
         private host:IBoid;
+        private randomX;
 
         constructor(host:IBoid) {
             console.log("steering manager init");
             this.host = host;
-            this.desired = new THREE.Vector3();
+            this.path = new THREE.Vector3();
             this.steering = new THREE.Vector3();
             this.truncate(this.host.getVelocity(), this.host.getMaxVelocity());
             this.ahead = new THREE.Vector3();
             this.behind = new THREE.Vector3();
+            this.randomX = Math.random() > 0.5 ? 1 : 0;
+            //this.randomX = 1;
         }
 
         update():void {
@@ -42,27 +45,40 @@ module Core {
             this.steering.add(this.doSeek(target, this.host.getMaxVelocity()));
         }
 
-        private doSeek(target:THREE.Vector3, slowingRadius:number = 20):THREE.Vector3 {
+        private doSeek(target:THREE.Vector3, slowingRadius:number = 100):THREE.Vector3 {
             var force:THREE.Vector3;
-            var distance:number;
+            var distanceToTarget:number;
+            this.path = target.sub(this.host.getPosition());
 
-            this.desired = target.sub(this.host.getPosition());
+            distanceToTarget = this.path.length();
+            this.path.normalize();
+            var direction: THREE.Vector3 = this.path.clone();
 
-            distance = this.desired.length();
-            this.desired.normalize();
-
-            if (distance <= slowingRadius) {
-                this.desired.multiplyScalar(this.host.getMaxVelocity() * distance / slowingRadius);
-                if (distance < 3) {
-                    //this.desired.multiplyScalar(0);
-                    this.reset();
+            if (distanceToTarget <= slowingRadius) {
+                // blir velocity
+                this.path.multiplyScalar(this.host.getMaxVelocity() * distanceToTarget / slowingRadius);
+                if (distanceToTarget < 30) {
+                    //this.path.multiplyScalar(0);
+                    this.stop();
                 }
             } else {
-                this.desired.multiplyScalar(this.host.getMaxVelocity());
+                this.path.multiplyScalar(this.host.getMaxVelocity());
             }
 
-            force = this.desired.sub(this.host.getVelocity());
+            force = this.path.sub(this.host.getVelocity());
             return force;
+        }
+
+        private distance(a, b): number {
+            return Math.sqrt((a.x - b.x) * (a.y - b.y) + (a.z - b.z));
+        }
+
+        private isOnLeaderSight(leader: RootObject, leaderAhead: THREE.Vector3) : boolean {
+            return this.distance(leaderAhead, this) <= leader.SIGHT_RADIUS || this.distance(leader.position, this) <= leader.SIGHT_RADIUS;
+        }
+
+        private arrive(target :THREE.Vector3, slowingRadius :number = 200) :THREE.Vector3 {
+            return this.doSeek(target, slowingRadius);
         }
 
         wander():void {
@@ -77,26 +93,30 @@ module Core {
 
         applyRootForce(root:RootObject, avoidForce:number, behindDistance:number):void {
             this.steering.add(this.doApplyRootForce(root, avoidForce, behindDistance));
-            this.steering.add(new THREE.Vector3(-1,0,-1));
+            /* TODO: hårtkodat slutposition för vart kameran ska ställa sig, nedan.*/
+            this.steering.add(new THREE.Vector3(1,1,1));
+            //this.steering.add(new THREE.Vector3(this.randomX,this.randomX,this.randomX)); // building entrance
         }
 
         private doApplyRootForce(root:RootObject, avoidForce:number, behindDistance:number):THREE.Vector3 {
             var _avoidForce = avoidForce;
             var _behindDistance = behindDistance;
             var tv = root.velocity.clone();
+            //var tv = new THREE.Vector3();
             var force = new THREE.Vector3(0, 0, 0);
             tv.normalize();
             tv.multiplyScalar(_behindDistance);
             this.ahead = root.position.clone().add(tv);
             tv.multiplyScalar(-1);
             this.behind = root.position.clone().add(tv);
+
             force.add(this.doSeek(this.behind, _avoidForce));
             return force;
         }
 
-        reset():void {
+        stop():void {
             this.steering.x = this.steering.y = this.steering.z = 0;
-            this.desired.x = this.desired.y = this.desired.z = 0;
+            this.path.x = this.path.y = this.path.z = 0;
         }
 
         truncate(vector:THREE.Vector3, max:number):void {

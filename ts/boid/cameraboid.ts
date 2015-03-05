@@ -17,6 +17,7 @@ module Core {
         private cameraHelper:THREE.CameraHelper;
         private static mass: number = 10;
         private static maxVelocity: number = 1;
+        private animationtime: number = 0.1;
 
         constructor(posX:number, posY:number, posZ:number, totalMass:number = 10) {
             super(posX, posY, posZ, totalMass);
@@ -25,37 +26,45 @@ module Core {
             this.camera.position.y = this.y;
             this.camera.position.z = this.z;
             this.cameraHelper = new THREE.CameraHelper(this.camera);
-            Environment.scene.add(this.camera);
-            Environment.scene.add(this.cameraHelper);
+            //Environment.scene.add(this.camera);
+            //Environment.scene.add(this.cameraHelper);
 
-            this.root = new RootObject(30, 0, 10);
             this.resting = false;
 
-
             // tweening
-            this.root.moveTo(new THREE.Vector3(250, 0, 0), 2);
+            //this.root.moveTo(new THREE.Vector3(250, 0, 0), this.animationtime);
+        }
+
+        setTargetObject(targetObject: RootObject):void {
+            this.root = targetObject;
         }
 
         getCamera():THREE.PerspectiveCamera {
             return this.camera;
         }
 
+        getCameraHelper():THREE.CameraHelper {
+            return this.cameraHelper;
+        }
+
         // override
         think():void {
             if (this.resting) {
                 console.log("resting");
-                //this.steering.wander();
+                this.steering.wander();
             } else {
                 //console.log(this.root.position);
-                this.steering.applyRootForce(this.root, 100, 200);
+                this.steering.applyRootForce(this.root, 200, 200);
                 //this.steering.seek(this.root.getPosition().clone(), 50);
             }
         }
 
         update():void {
+            //var camStartRecord = _FrameRecorder.startRecord(this.x, this.position.clone());
             super.update();
             this.camera.position.x = this.x;
             this.camera.position.z = this.z;
+            //this.camera.position.y = this.y;
             this.camera.lookAt(this.root.getPosition().clone());
 
             // recording section
@@ -67,6 +76,10 @@ module Core {
         // override super getMaxVelocity
         getMaxVelocity():number {
             return this.resting ? 0 : this.maxVelocity;
+        }
+
+        getRoot():RootObject {
+            return this.root;
         }
     }
 }

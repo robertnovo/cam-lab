@@ -3,15 +3,16 @@
  */
 /// <reference path="../typings/threejs/three.d.ts"/>
 module Core {
-    class RecordData {
-        private _directionArray:Array<THREE.Vector3>;
+    export class RecordData {
+        private _lookAtArray:Array<THREE.Vector3>;
         private _timeArray:Array<number>;
         private _positionArray:Array<THREE.Vector3>;
         private _clock:THREE.Clock = new THREE.Clock();
         private _isActive:Boolean = false;
+        private _duration:number = 0;
 
-        constructor(directionArray:Array<THREE.Vector3>, positionArray:Array<THREE.Vector3>, timeArray:Array<number>) {
-            this._directionArray = directionArray;
+        constructor(lookAtArray:Array<THREE.Vector3>, positionArray:Array<THREE.Vector3>, timeArray:Array<number>) {
+            this._lookAtArray = lookAtArray;
             this._positionArray = positionArray;
             this._timeArray = timeArray;
         }
@@ -29,11 +30,15 @@ module Core {
         stopRecordData(direction:THREE.Vector3, position:THREE.Vector3):void {
             this._isActive = false;
             this._clock.stop();
-            this.addRecordData(direction, position, this._clock.getElapsedTime());
+            this._duration = this._clock.getElapsedTime();
+            this.addRecordData(direction, position, this._duration);
+            for (var i = 0; i < this._timeArray.length; i++ ) {
+                this._timeArray[i] = this._timeArray[i]/this._duration;
+            }
         }
 
         get getDirectionArray() {
-            return this._directionArray;
+            return this._lookAtArray;
         }
 
         get getTimeArray() {
@@ -49,13 +54,13 @@ module Core {
         }
 
         private addRecordData(direction:THREE.Vector3, position:THREE.Vector3, time:number):void {
-            this._directionArray.push(direction);
+            this._lookAtArray.push(direction);
             this._positionArray.push(position);
             this._timeArray.push(time);
         }
     }
 
-    // singleton
+    /* TODO: Make singleton */
     class FrameRecorder {
 
         private _activeRecords:Array<RecordData> = new Array<RecordData>();

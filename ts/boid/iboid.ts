@@ -8,5 +8,6 @@ module Core {
         getMaxVelocity(): number;
         getPosition(): THREE.Vector3;
         getMass(): number;
+        getRoot():RootObject;
     }
 }

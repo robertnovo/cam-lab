@@ -48,6 +48,20 @@ module Core {
             this.z = this.position.z;
         }
 
+        drawPoints(recording: RecordData):void {
+            var path = recording.getPositionArray;
+            var time = recording.getTimeArray;
+            var geometry = new THREE.Geometry();
+            var material = new THREE.LineBasicMaterial({
+                color: 0x00ff00
+            });
+            for (var i = path.length - 1; i >= 0; i--) {
+                geometry.vertices.push(new THREE.Vector3(path[i].x, path[i].y, path[i].z));
+            }
+            var line = new THREE.Line(geometry, material);
+            Environment.scene.add(line);
+        }
+
         getVelocity():THREE.Vector3 {
             return this.velocity;
         }
@@ -62,6 +76,10 @@ module Core {
 
         getMass():number {
             return this.mass;
+        }
+
+        getRoot():RootObject {
+            throw new Error("only works on overrides");
         }
     }
 }

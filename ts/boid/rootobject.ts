@@ -4,17 +4,19 @@
 /// <reference path="boid.ts"/>
 /// <reference path="../framerecorder.ts"/>
 /// <reference path="../../typings/tween.d.ts"/>
+/// <reference path="../framerecorder.ts"/>
 module Core {
-    export class RootObject extends THREE.Object3D {
+    export class RootObject extends THREE.Object3D { // target object
 
         private mesh:THREE.Mesh;
 
-        velocity: THREE.Vector3;
-        desired: THREE.Vector3;
-        steering: THREE.Vector3;
-        behind: THREE.Vector3;
-        ahead: THREE.Vector3;
-        avoidance: THREE.Vector3;
+        velocity:THREE.Vector3;
+        desired:THREE.Vector3;
+        steering:THREE.Vector3;
+        behind:THREE.Vector3;
+        ahead:THREE.Vector3;
+        avoidance:THREE.Vector3;
+        SIGHT_RADIUS: number = 50;
 
         constructor(posX:number, posY:number, posZ:number) {
             super();
@@ -46,7 +48,7 @@ module Core {
                     z: target.z
                 }, seconds * 1000)
                 //.repeat(Infinity)
-                //.delay(1000)
+                .delay(1000)
                 //.yoyo(true)
                 .easing(TWEEN.Easing.Exponential.InOut)
                 .onUpdate((interpolation) => {
@@ -57,17 +59,31 @@ module Core {
                     _FrameRecorder.updateRecord(recordIndex, vec, vec);
                 })
                 .onStart(() => {
-                  console.log("initialize cam record");
-                  /* TODO: Init cam recorder */
-                    console.log(this.position);
+                    console.log("initialize cam record");
+                    //console.log(this.position);
                     recordIndex = _FrameRecorder.startRecord(this.position.clone(), this.position.clone());
                 })
                 .onComplete(() => {
                     _FrameRecorder.stopRecord(recordIndex, this.mesh.position, this.mesh.position);
-                    console.log(_FrameRecorder.exportAndRemoveRecord(recordIndex));
+                    //this.drawPoints(_FrameRecorder.exportRecord(recordIndex));
+                    var recordData = _FrameRecorder.exportAndRemoveRecord(recordIndex);
                     //_FrameRecorder.exportRecord(recordIndex);
                 })
                 .start();
+        }
+
+        drawPoints(recording: RecordData):void {
+            var path = recording.getPositionArray;
+            var time = recording.getTimeArray;
+            var geometry = new THREE.Geometry();
+            var material = new THREE.LineBasicMaterial({
+                color: 0x00ff00
+            });
+            for (var i = path.length - 1; i >= 0; i--) {
+                geometry.vertices.push(new THREE.Vector3(path[i].x, path[i].y, path[i].z));
+            }
+            var line = new THREE.Line(geometry, material);
+            Environment.scene.add(line);
         }
 
         getPosition() {
